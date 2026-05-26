@@ -3,22 +3,22 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 export async function GET() {
-  let dolar = "0.0000", euroReal = "0.0000", euroDolar = "0.0000", cafeValue = "Indisponível";
+  let dolar = "...", euroReal = "...", euroDolar = "...", cafeValue = "Indisponível";
 
-  // 1. Busca das moedas - Vamos forçar o formato de resposta
+  // 1. Nova estratégia para moedas: Usar a API do HG Brasil (muito estável e gratuita)
   try {
-    const res = await axios.get('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL,EUR-USD', { timeout: 8000 });
+    const res = await axios.get('https://api.hgbrasil.com/finance?format=json-cors', { timeout: 8000 });
+    const currencies = res.data.results.currencies;
     
-    // Verificamos se o objeto existe antes de acessar
-    if (res.data.USDBRL) dolar = parseFloat(res.data.USDBRL.bid).toFixed(4);
-    if (res.data.EURBRL) euroReal = parseFloat(res.data.EURBRL.bid).toFixed(4);
-    if (res.data.EURUSD) euroDolar = parseFloat(res.data.EURUSD.bid).toFixed(4);
-    
+    dolar = currencies.USD.buy.toFixed(4);
+    euroReal = currencies.EUR.buy.toFixed(4);
+    // HG Brasil não dá EUR/USD direto, calculamos:
+    euroDolar = (currencies.EUR.buy / currencies.USD.buy).toFixed(4);
   } catch (e) {
-    console.error("Erro na API de moedas:", e);
+    console.error("Erro na API HG Brasil:", e);
   }
 
-  // 2. Busca do café (que já sabemos que funciona)
+  // 2. Busca do café
   try {
     const { data } = await axios.get('https://www.noticiasagricolas.com.br/cotacoes/cafe', {
       timeout: 10000,
