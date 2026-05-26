@@ -36,6 +36,11 @@ export async function GET() {
     euroReal,
     euroDolar,
     cafe: cafeValue,
-    timestamp: new Date().toLocaleTimeString('pt-BR')
+    timestamp: new Date().toLocaleTimeString('pt-BR', { 
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+    })
   });
 }
