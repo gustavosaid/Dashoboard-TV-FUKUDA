@@ -6,35 +6,35 @@ export default function Dashboard() {
   const [data, setData] = useState({ 
     dolar: '...', euroReal: '...', euroDolar: '...', cafe: '...', timestamp: '' 
   });
-  const [historico, setHistorico] = useState([]);
+  // 1. Tipagem explícita: define o que é o dado do histórico
+  const [historico, setHistorico] = useState<{data: string, preco: number}[]>([]); 
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-  try {
-    // Busca Cotações de forma independente
-    const resCotacoes = await fetch('/api/cotacoes');
-    if (resCotacoes.ok) {
-      const jsonCotacoes = await resCotacoes.json();
-      setData(jsonCotacoes);
-    }
-
-    // Busca Gráfico de forma independente
-    const resGrafico = await fetch('/api/grafico-cafe');
-    if (resGrafico.ok) {
-      const jsonGrafico = await resGrafico.json();
-      // Verificamos se é um array antes de atualizar o estado
-      if (Array.isArray(jsonGrafico)) {
-        setHistorico(jsonGrafico);
+    try {
+      const [resCotacoes, resGrafico] = await Promise.all([
+        fetch('/api/cotacoes', { cache: 'no-store' }),
+        fetch('/api/grafico-cafe', { cache: 'no-store' })
+      ]);
+      
+      if (resCotacoes.ok) {
+        const jsonCotacoes = await resCotacoes.json();
+        setData(jsonCotacoes);
       }
-    } else {
-      console.warn("API de gráfico retornou erro:", resGrafico.status);
+
+      if (resGrafico.ok) {
+        // 2. Aqui eliminamos o erro forçando a tipagem do resultado
+        const jsonGrafico: {data: string, preco: number}[] = await resGrafico.json();
+        if (Array.isArray(jsonGrafico)) {
+          setHistorico(jsonGrafico);
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao buscar dados:", e);
+    } finally {
+      setLoading(false);
     }
-  } catch (e) {
-    console.error("Erro na comunicação com a API:", e);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchData();
