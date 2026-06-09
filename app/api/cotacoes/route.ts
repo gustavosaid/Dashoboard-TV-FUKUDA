@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+
 export async function GET() {
   let dolar = "...", euroReal = "...", euroDolar = "...", cafeValue = "Indisponível";
 
@@ -44,3 +45,4 @@ export async function GET() {
     })
   });
 }
+
